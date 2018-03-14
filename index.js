@@ -12,11 +12,12 @@ class Reader extends Readable {
   _read () {
     var self = this
     self._reader.read()
-      .then((done, value) => {
-        if (done) {
+      .then(chunk => {
+        if (chunk.done) {
           self.push(null)
         } else {
-          if (self.push(value)) self._read()
+          const more = self.push(chunk.value)
+          if (more) self._read()
         }
       })
       .catch(self.emit.bind(self, 'error'))
