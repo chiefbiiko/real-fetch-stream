@@ -1,0 +1,26 @@
+{
+  "name": "real-fetch-stream",
+  "version": "0.0.0",
+  "description": "node style fetch stream",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiefbiiko/real-fetch-stream.git"
+  },
+  "keywords": [
+    "stream",
+    "fetch"
+  ],
+  "author": "Noah Anabiik Schwarz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chiefbiiko/real-fetch-stream/issues"
+  },
+  "homepage": "https://github.com/chiefbiiko/real-fetch-stream#readme",
+  "dependencies": {
+    "readable-stream": "^2.3.5"
+  }
+}
