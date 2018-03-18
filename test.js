@@ -1,17 +1,9 @@
-var tape = require('tape')
-var realFeetchStream = require('./index')
+var realFetchStream = require('./index')
 
-tape('streamin', function (t) {
-  var rfs = await realFetchStream('...')
+(async function () {
+  console.log('node stream emits data')
+  var rfs = await realFetchStream('http://www.linux-usb.org/usb.ids')
   rfs.on('data', function (chunk) {
-    t.ok(chunk.length, 'gettin bytes')
+    if (!chunk.length) throw Error('chunk.length is not truthy')
   })
-  rfs.on('end', function () {
-    t.end()
-  })
-})
-
-tape('encoding', function (t) {
-  t.ok(false)
-  t.end()
-})
+})()

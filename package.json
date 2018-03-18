@@ -4,7 +4,8 @@
   "description": "node style fetch stream",
   "main": "index.js",
   "scripts": {
-  "bundle": "browserify index.js -o bundle.js",  "test": "echo \"Error: no test specified\" && exit 1"
+    "bundle": "browserify index.js -o bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,6 @@
   "homepage": "https://github.com/chiefbiiko/real-fetch-stream#readme",
   "dependencies": {
     "readable-stream": "^2.3.5"
-  }
+  },
+  "devDependencies": {}
 }

@@ -26,7 +26,7 @@ class Reader extends Readable {
 }
 
 async function realFetchStream (url, opts) {
-  const fake = await fetch(url).then(res => res.body.getReader())
+  const fake = await fetch(url, opts).then(res => res.body.getReader())
   return new Reader(fake, opts)
 }
 
