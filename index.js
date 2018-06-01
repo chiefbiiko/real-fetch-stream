@@ -1,14 +1,11 @@
-const Readable = require('readable-stream')
+const { Readable } = require('stream')
+const concat = require('concat-stream')
 
 class Reader extends Readable {
-
-  constructor (reader, opts) {
-    if (!opts) opts = {}
-    opts.objectMode = false
-    super(opts)
+  constructor (reader, opts = {}) {
+    super(Object.assign(opts, { objectMode: false }))
     this._reader = reader
   }
-
   _read () {
     var self = this
     self._reader.read()
@@ -22,13 +19,26 @@ class Reader extends Readable {
       })
       .catch(self.emit.bind(self, 'error'))
   }
-
 }
 
-async function realFetchStream (url, opts) {
-  const fake = await fetch(url, opts).then(res => res.body.getReader())
-  return new Reader(fake, opts)
+function realFetchStream (url, opts) {
+  return new Promise((resolve, reject) => {
+    if (opts.method.toLowerCase() === 'get') {
+      fetch(url, opts)
+        .then(res => resolve(new Reader(res.body.getReader(), opts)))
+        .catch(reject)
+    } else if (opts.method.toLowerCase() === 'post') {
+      resolve(concat(buf => {
+        fetch(url, {
+          method: 'post',
+          body: buf
+        })
+          .then(() => {}) // ???
+          .catch(() => {}) // ??
+      }))
+    }
+  })
 }
 
 window.realFetchStream = realFetchStream
-module.exports = realFetchStream
+// module.exports = realFetchStream
