@@ -1,6 +1,6 @@
 {
   "name": "real-fetch-stream",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "node style fetch stream",
   "main": "index.js",
   "scripts": {
