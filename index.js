@@ -1,6 +1,10 @@
 const { Duplex, Readable } = require('stream')
 const debug = require('debug')('real-fetch-stream')
 
+// TODO: reimplement Duplo via a Transform
+
+debug.enabled = true
+
 class Reader extends Readable {
 
   constructor (reader, opts = {}) {
@@ -32,12 +36,17 @@ class Duplo extends Duplex {
   _read (size) {
     debug('::readin::')
     var self = this
-    if (self._response === undefined) {
+    if (!self._response) {
       debug('::response still undefined::')
-      return
-    } else if (self._response === null) {
-      debug('::response is null::')
-      self.push(null)
+      // return
+      return self.once('_response', () => {
+        self._response.body.read()
+          .then(chunk => {
+            if (chunk.done) self.push(null)
+            else if (self.push(chunk.value)) self._read()
+          })
+          .catch(self.emit.bind(self, 'error'))
+      })
     } else if (self._response) {
       debug('::response is truthy::')
       self._response.body.read()
@@ -61,8 +70,9 @@ class Duplo extends Duplex {
     }))
       .then(res => {
         if (!res.ok) self.emit('error')
-        debug('res::', res)
         self._response = res
+        self.emit('_response')
+        end()
       })
       .catch(self.emit.bind(self, 'error'))
   }
