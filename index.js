@@ -1,7 +1,6 @@
 const { Readable, Transform } = require('stream')
-const toEmitter = require('./promise-to-emitter')
+const toEmitter = require('promise-to-emitter')
 const debug = require('debug')('real-fetch-stream')
-debug.enabled = true
 
 /* TODO:
 + think about mime types and allowing objectMode

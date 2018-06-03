@@ -1,6 +1,6 @@
 {
   "name": "real-fetch-stream",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "node style fetch stream",
   "main": "index.js",
   "unpkg": "bundle.js",
@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/chiefbiiko/real-fetch-stream#readme",
   "dependencies": {
-    "on-change": "^0.1.0"
+    "on-change": "^0.1.0",
+    "promise-to-emitter": "0.0.1"
   },
   "devDependencies": {
     "browserify": "^16.2.2",
