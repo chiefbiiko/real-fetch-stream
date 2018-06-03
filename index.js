@@ -1,4 +1,6 @@
 const { Duplex, Readable, Transform } = require('stream')
+const watchProps = require('on-change')
+const proxyWatcher = require('./proxyWatcher')
 const debug = require('debug')('real-fetch-stream')
 
 // TODO:
@@ -13,6 +15,11 @@ class ReaderWrapper extends Readable {
   constructor (url, opts = {}) {
     opts = Object.assign(Object.assign({}, opts), { objectMode: false }) // rily
     super(opts)
+
+    var { proxy, watcher } = proxyWatcher(this)
+    this = proxy
+    this._watcher = watcher
+
     this._opts = opts
     this.once('end', () => this._reader.releaseLock())
     fetch(url, opts)
@@ -20,14 +27,24 @@ class ReaderWrapper extends Readable {
       .catch(err => throw err)
   }
 
-  _read () { // can i use @sindresorhus/on-change 2 watch this._reader ??
-    var self = this
-    self._reader.read()
-      .then(chunk => {
-        if (chunk.done) self.push(null)
-        else if (self.push(chunk.value)) self._read()
+  // can i use @sindresorhus/on-change 2 watch this._reader ??
+  // just use Proxy directly
+  _read () {
+    if (!this._reader) {
+      // _read once _reader exist
+      return this._watcher.on('set', function onset (prop) {
+        if (prop === '_reader') {
+          this._watcher.removeListener('set', onset)
+          this._read()
+        }
       })
-      .catch(self.emit.bind(self, 'error'))
+    }
+    this._reader.read()
+      .then(chunk => {
+        if (chunk.done) this.push(null)
+        else if (this.push(chunk.value)) this._read()
+      })
+      .catch(this.emit.bind(this, 'error'))
   }
 
 }
@@ -154,18 +171,29 @@ class DuplexWrapper extends Transform {
 
 function realFetchStream (url, opts) {
   opts = Object.assign({ method: 'get' }, opts || {})
-  return new Promise((resolve, reject) => {
-    if (opts.method.toLowerCase() === 'get') {
-      fetch(url, opts)
-        .then(res => resolve(new ReaderWrapper(res.body.getReader(), opts)))
-        .catch(reject)
-    } else if (opts.method.toLowerCase() === 'post') {
-      resolve(new DuplexWrapper(url, opts))
-    } else {
-      reject(new Error('unsupported HTTP method: ' + opts.method))
-    }
-  })
+  if (opts.method.toLowerCase() === 'get') {
+    return new ReaderWrapper(url, opts)
+  } else if (opts.method.toLowerCase() === 'post') {
+    return new DuplexWrapper(url, opts)
+  } else {
+    throw new Error('unsupported HTTP method: ' + opts.method)
+  }
 }
+
+// function realFetchStream (url, opts) {
+//   opts = Object.assign({ method: 'get' }, opts || {})
+//   return new Promise((resolve, reject) => {
+//     if (opts.method.toLowerCase() === 'get') {
+//       fetch(url, opts)
+//         .then(res => resolve(new ReaderWrapper(res.body.getReader(), opts)))
+//         .catch(reject)
+//     } else if (opts.method.toLowerCase() === 'post') {
+//       resolve(new DuplexWrapper(url, opts))
+//     } else {
+//       reject(new Error('unsupported HTTP method: ' + opts.method))
+//     }
+//   })
+// }
 
 module.exports = realFetchStream
 // window.realFetchStream = realFetchStream // 4 bundlin only

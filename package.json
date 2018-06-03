@@ -21,7 +21,9 @@
     "url": "https://github.com/chiefbiiko/real-fetch-stream/issues"
   },
   "homepage": "https://github.com/chiefbiiko/real-fetch-stream#readme",
-  "dependencies": {},
+  "dependencies": {
+    "on-change": "^0.1.0"
+  },
   "devDependencies": {
     "browserify": "^16.2.2",
     "tape": "^4.9.0",
