@@ -2,8 +2,7 @@ var realFetchStream = require('./index')
 var tape = require('tape')
 
 tape.only('get', function (t) {
-  var endpoint = 'https://api.github.com/users'
-  var rfs = realFetchStream(endpoint)
+  var rfs = realFetchStream('https://api.github.com/users')
   rfs.on('data', function (chunk) {
     t.ok(chunk.length, 'got sth')
   })
