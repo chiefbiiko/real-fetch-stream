@@ -10,15 +10,17 @@ debug.enabled = true
 
 class ReaderWrapper extends Readable {
 
-  constructor (reader, opts = {}) {
+  constructor (url, opts = {}) {
     opts = Object.assign(Object.assign({}, opts), { objectMode: false }) // rily
     super(opts)
     this._opts = opts
-    this._reader = reader
     this.once('end', () => this._reader.releaseLock())
+    fetch(url, opts)
+      .then(res => this._reader = res.body.getReader())
+      .catch(err => throw err)
   }
 
-  _read () {
+  _read () { // can i use @sindresorhus/on-change 2 watch this._reader ??
     var self = this
     self._reader.read()
       .then(chunk => {
@@ -29,6 +31,28 @@ class ReaderWrapper extends Readable {
   }
 
 }
+
+// class ReaderWrapper extends Readable {
+//
+//   constructor (reader, opts = {}) {
+//     opts = Object.assign(Object.assign({}, opts), { objectMode: false }) // rily
+//     super(opts)
+//     this._opts = opts
+//     this._reader = reader
+//     this.once('end', () => this._reader.releaseLock())
+//   }
+//
+//   _read () {
+//     var self = this
+//     self._reader.read()
+//       .then(chunk => {
+//         if (chunk.done) self.push(null)
+//         else if (self.push(chunk.value)) self._read()
+//       })
+//       .catch(self.emit.bind(self, 'error'))
+//   }
+//
+// }
 
 class DuplexWrapper extends Transform {
 
