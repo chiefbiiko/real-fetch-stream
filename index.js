@@ -1,7 +1,10 @@
 const { Duplex, Readable, Transform } = require('stream')
 const debug = require('debug')('real-fetch-stream')
 
-// TODO: reimplement DuplexWrapper via a Transform
+// TODO:
+// # reimplement DuplexWrapper via a Transform
+// # rewrite ReaderWrapper to have the initial fetch within the constructor
+// # then toss the promise return from the main export
 
 debug.enabled = true
 
@@ -49,18 +52,21 @@ class DuplexWrapper extends Transform {
     }))
       .then(res => {
         if (!res.ok) self.emit('error')
+        const _reader = res.body.getReader()
         const _read = () => {
-          res.body.read()
+          _reader.read()
             .then(chunk => {
               if (chunk.done) {
                 self.push(null)
-                cb()
+                _reader.releaseLock()
+                return cb()
               } else if (self.push(chunk.value)) {
-                _read()
+                return _read()
               }
             })
             .catch(self.emit.bind(self, 'error'))
         }
+        _read()
       })
       .catch(self.emit.bind(self, 'error'))
   }
