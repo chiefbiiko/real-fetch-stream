@@ -51,7 +51,7 @@ class DuplexWrapper extends Transform {
       body: Buffer.concat(self._chunks)
     }))
       .then(res => {
-        if (!res.ok) self.emit('error')
+        if (!res.ok) return self.emit('error')
         const _reader = res.body.getReader()
         const _read = () => {
           _reader.read()
@@ -64,11 +64,11 @@ class DuplexWrapper extends Transform {
                 return _read()
               }
             })
-            .catch(self.emit.bind(self, 'error'))
+            .catch(cb)
         }
         _read()
       })
-      .catch(self.emit.bind(self, 'error'))
+      .catch(cb)
   }
 
 }
