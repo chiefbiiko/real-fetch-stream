@@ -1,7 +1,7 @@
 var realFetchStream = require('./index')
 var tape = require('tape')
 
-tape('get', async function (t) {
+tape.only('get', async function (t) {
   var endpoint = 'https://api.github.com/users'
   var rfs = await realFetchStream(endpoint)
   rfs.on('data', function (chunk) {

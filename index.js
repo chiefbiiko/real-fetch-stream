@@ -10,6 +10,7 @@ class Reader extends Readable {
   constructor (reader, opts = {}) {
     super(Object.assign(opts, { objectMode: false })) // rily?
     this._reader = reader
+    this.once('end', () => this._reader.releaseLock())
   }
 
   _read () {
