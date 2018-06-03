@@ -1,6 +1,5 @@
 const { Duplex, Readable, Transform } = require('stream')
 const watchProps = require('on-change')
-const proxyWatcher = require('./proxyWatcher')
 const debug = require('debug')('real-fetch-stream')
 
 // TODO:
@@ -16,9 +15,7 @@ class ReaderWrapper extends Readable {
     opts = Object.assign(Object.assign({}, opts), { objectMode: false }) // rily
     super(opts)
 
-    var { proxy, watcher } = proxyWatcher(this)
-    this = proxy
-    this._watcher = watcher
+    watchProps(this, () => { if (this._reader) this.emit('_ready') })
 
     this._opts = opts
     this.once('end', () => this._reader.releaseLock())
@@ -28,17 +25,8 @@ class ReaderWrapper extends Readable {
   }
 
   // can i use @sindresorhus/on-change 2 watch this._reader ??
-  // just use Proxy directly
   _read () {
-    if (!this._reader) {
-      // _read once _reader exist
-      return this._watcher.on('set', function onset (prop) {
-        if (prop === '_reader') {
-          this._watcher.removeListener('set', onset)
-          this._read()
-        }
-      })
-    }
+    if (!this._reader) return this.once('_ready', this._read)
     this._reader.read()
       .then(chunk => {
         if (chunk.done) this.push(null)
