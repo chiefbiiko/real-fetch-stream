@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/chiefbiiko/real-fetch-stream#readme",
   "dependencies": {
-    "on-change": "^0.1.0",
+    "fetch-headers-pojo": "0.0.0",
     "promise-to-emitter": "0.0.1"
   },
   "devDependencies": {
