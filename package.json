@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "description": "node style fetch stream",
   "main": "index.js",
+  "unpkg": "bundle.js",
   "scripts": {
-    "bundle": "browserify index.js -o bundle.js",
+    "bundle": "browserify index.js -s realFetchStream -o bundle.js",
     "test": "browserify test.js | tape-run"
   },
   "repository": {
