@@ -23,3 +23,16 @@ tape('post', function (t) {
   rfs.write('hello server')
   rfs.end('!')
 })
+
+tape('headers', function (t) {
+  var rfs = realFetchStream('https://api.github.com/users/chiefbiiko')
+  rfs.on('data', function (chunk) {
+    t.ok(chunk.length, 'in chunks')
+  })
+  rfs.on('headers', function (headers) {
+    t.is(headers.constructor, Object, 'normal pojo')
+  })
+  rfs.on('end', function () {
+    t.end()
+  })
+})

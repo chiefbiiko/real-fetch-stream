@@ -1,12 +1,18 @@
 const { Readable, Transform } = require('stream')
 const toEmitter = require('promise-to-emitter')
+const { pojoFromHeaders } = require('fetch-headers-pojo')
 const debug = require('debug')('real-fetch-stream')
 
 /* TODO:
 + think about mime types and allowing objectMode
-+ emit response headers
 + readme
 */
+
+const ERR = {
+  NOT_OK (status) {
+    return new Error('response failed with status: ' + status)
+  }
+}
 
 class ReaderWrapper extends Readable {
 
@@ -15,7 +21,11 @@ class ReaderWrapper extends Readable {
     super(opts)
     this._reader = null
     this._fetcher = toEmitter(fetch(url, opts))
-    this._fetcher.once('resolved', res => this._reader = res.body.getReader())
+    this._fetcher.once('resolved', res => {
+      if (!res.ok) return this.emit('error', ERR.NOT_OK(res.status))
+      this.emit('headers', pojoFromHeaders(res.headers))
+      this._reader = res.body.getReader()
+    })
     this.once('end', () => this._reader.releaseLock())
   }
 
@@ -53,7 +63,8 @@ class DuplexWrapper extends Transform {
       body: Buffer.concat(this._chunks)
     }))
       .then(res => {
-        if (!res.ok) return this.emit('error')
+        if (!res.ok) return this.emit('error', ERR.NOT_OK(res.status))
+        this.emit('headers', pojoFromHeaders(res.headers))
         const _reader = res.body.getReader()
         const _read = () => {
           _reader.read()
