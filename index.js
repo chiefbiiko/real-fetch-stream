@@ -26,6 +26,8 @@ class ReaderWrapper extends Readable {
       this.emit('headers', pojoFromHeaders(res.headers))
       this._reader = res.body.getReader()
     })
+    this._emitError = this.emit.bind(this, 'error')
+    this._fetcher.on('error', this._emitError)
     this.once('end', () => this._reader.releaseLock())
   }
 
@@ -38,7 +40,7 @@ class ReaderWrapper extends Readable {
         if (chunk.done) this.push(null)
         else if (this.push(chunk.value)) this._read()
       })
-      .catch(this.emit.bind(this, 'error'))
+      .catch(this._emitError)
   }
 
 }
